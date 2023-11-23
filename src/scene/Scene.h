@@ -36,9 +36,13 @@ protected:
 
     virtual void draw();
     virtual void drawProperty();
+    virtual void reset() = 0;
+    virtual void drawSettings() = 0;
 
     virtual void onMouseEvent(const MouseEvent* e);
     virtual void onKeyEvent(const KeyEvent* e);
+    virtual void cameraMouseEvent(const MouseEvent* e, Camera2D* camera);
+    virtual void cameraMouseEvent(const MouseEvent* e, Camera3D* camera);
 
     std::string name;
     int width{0};
@@ -52,6 +56,11 @@ protected:
 
     MouseListenerRef mouseListener;
     KeyListenerRef keyListener;
+
+    math::Vec2 lastMousePos{};
+    bool holdLeftButton{false};
+    bool holdRightButton{false};
+    bool holdMidButton{false};
 };
 
 

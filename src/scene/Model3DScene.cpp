@@ -1,8 +1,8 @@
 //
-// Created by wlk12 on 2023/8/6.
+// Created by DELL on 2023/10/27.
 //
 
-#include "ModelScene.h"
+#include "Model3DScene.h"
 #include "common/Texture.h"
 #include "common/Shader.h"
 #include "common/FrameBuffer.h"
@@ -11,7 +11,7 @@
 #include "common/Logger.h"
 #include "common/Model.h"
 
-ModelScene::ModelScene(int width, int height)
+Model3DScene::Model3DScene(int width, int height)
     : Scene(ID, width, height, 4)
 {
     this->camera = Camera3D::create();
@@ -23,19 +23,19 @@ ModelScene::ModelScene(int width, int height)
     this->cube = Model::create("asset/model/cube.obj");
     this->plane = Model::create("asset/model/plane.obj");
 
-    ModelScene::reset();
+    Model3DScene::reset();
 }
 
-SceneRef ModelScene::create()
+SceneRef Model3DScene::create()
 {
-    struct enable_make_shared : public ModelScene
+    struct enable_make_shared : public Model3DScene
     {
-        enable_make_shared() : ModelScene(0, 0) {}
+        enable_make_shared() : Model3DScene(0, 0) {}
     };
     return std::make_shared<enable_make_shared>();
 }
 
-void ModelScene::reset()
+void Model3DScene::reset()
 {
     this->camera->resetView();
     this->camera->round(-20, 0);
@@ -49,7 +49,7 @@ void ModelScene::reset()
     this->planeColor = math::Vec3{0.4, 0.4, 0.4};
 }
 
-void ModelScene::draw()
+void Model3DScene::draw()
 {
     this->camera->setViewSize((float)this->width, (float)this->height);
     this->camera->update();
@@ -63,8 +63,7 @@ void ModelScene::draw()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
-//    glDisable(GL_MULTISAMPLE);
-
+    //    glDisable(GL_MULTISAMPLE);
 
     auto mat = math::translate({120, 1, 0}) * math::scale({100, 100, 100});
     auto normalMat = glm::transpose(glm::inverse(math::Mat3{mat}));
@@ -104,85 +103,19 @@ void ModelScene::draw()
     drawIndicator(points2D.data(), (int)points2D.size(), {1.0, 0.4, 0.3, 1});
 }
 
-void ModelScene::drawProperty()
+void Model3DScene::drawSettings()
 {
-    if (!showPropertyWindow)
-    {
-        return;
-    }
+    ImGui::ColorEdit3("Light Color", (float*)&lightColor, ImGuiColorEditFlags_Float);
+    ImGui::DragFloat3("Light Direction", (float*)&lightDir);
 
-    if(ImGui::Begin(Scene::PropertyWindow, &showPropertyWindow, 0))
-    {
-        ImGui::SetWindowSize({300, 400}, ImGuiCond_FirstUseEver);
-        if (ImGui::Button("Reset", {100.0f, 0}))
-        {
-            this->reset();
-        }
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("Save Picture"))
-        {
-            const auto& pixels = this->fbResolved->readPixel();
-            std::string path = ".data/";
-            path += this->name;
-            path += ".png";
-            stbi_write_png(path.c_str(), width, height, 4, pixels.data(), width * 4);
-
-            auto workingDir = std::filesystem::current_path().u8string();
-            LOGI("Save to picture: {}/{}", (const char*)workingDir.data(), path);
-        }
-
-        ImGui::Separator();
-        ImGui::ColorEdit3("Light Color", (float*)&lightColor, ImGuiColorEditFlags_Float);
-        ImGui::DragFloat3("Light Direction", (float*)&lightDir);
-
-        ImGui::Separator();
-        ImGui::ColorEdit3("Sphere Color", (float*)&sphereColor, ImGuiColorEditFlags_Float);
-        ImGui::ColorEdit3("Cube Color", (float*)&cubeColor, ImGuiColorEditFlags_Float);
-        ImGui::ColorEdit3("Plane Color", (float*)&planeColor, ImGuiColorEditFlags_Float);
-    }
-    ImGui::End();
+    ImGui::Separator();
+    ImGui::ColorEdit3("Sphere Color", (float*)&sphereColor, ImGuiColorEditFlags_Float);
+    ImGui::ColorEdit3("Cube Color", (float*)&cubeColor, ImGuiColorEditFlags_Float);
+    ImGui::ColorEdit3("Plane Color", (float*)&planeColor, ImGuiColorEditFlags_Float);
 }
 
-void ModelScene::onMouseEvent(const MouseEvent* e)
+void Model3DScene::onMouseEvent(const MouseEvent* e)
 {
-    if (e->mouseButton == MouseEvent::kButtonLeft)
-    {
-        if (e->mouseEventType == MouseEvent::kMousePress)
-        {
-            this->holdLeftButton = true;
-        }
-        else if (e->mouseEventType == MouseEvent::kMouseRelease)
-        {
-            this->holdLeftButton = false;
-        }
-    }
-
-    if (e->mouseButton == MouseEvent::kButtonMiddle)
-    {
-        if (e->mouseEventType == MouseEvent::kMousePress)
-        {
-            this->holdMidButton = true;
-        }
-        else if (e->mouseEventType == MouseEvent::kMouseRelease)
-        {
-            this->holdMidButton = false;
-        }
-    }
-
-    if (e->mouseEventType == MouseEvent::kMouseScroll)
-    {
-        this->camera->forward((float)e->scrollY*20.0f);
-    }
-    else if (e->mouseEventType == MouseEvent::kMouseMove)
-    {
-        auto delta = e->posDelta;
-        if (this->holdLeftButton)
-        {
-            this->camera->round(delta.x, -delta.y);
-        }
-        else if(this->holdMidButton)
-        {
-            this->camera->move({delta.x, -delta.y, 0});
-        }
-    }
+    Scene::onMouseEvent(e);
+    cameraMouseEvent(e, this->camera.get());
 }

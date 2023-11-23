@@ -3,7 +3,7 @@
 //
 #pragma once
 #include "Define.h"
-#include "scene/Scene.hpp"
+#include "scene/Scene.h"
 #include "common/EventSystem.h"
 #include "common/MathHelp.h"
 #include "GLWindow.h"

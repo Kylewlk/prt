@@ -2,8 +2,12 @@
 // Created by wlk12 on 2023/8/6.
 //
 
-#include "Scene.hpp"
+#include "Scene.h"
 #include "common/FrameBuffer.h"
+#include "camera/Camera2D.h"
+#include "camera/Camera3D.h"
+#include "common/EventSystem.h"
+#include "common/Logger.h"
 
 Scene::Scene(const char* name, int width, int height, int samples)
     :name(name), width(0), height(0), samples(samples)
@@ -55,7 +59,37 @@ void Scene::draw()
 
 void Scene::drawProperty()
 {
+    if (!showPropertyWindow)
+    {
+        return;
+    }
+    if(ImGui::Begin(Scene::PropertyWindow, &showPropertyWindow, 0))
+    {
+        ImGui::SetWindowSize({300, 400}, ImGuiCond_FirstUseEver);
+        if (ImGui::Button("Reset", {100.0f, 0}))
+        {
+            this->reset();
+        }
 
+        ImGui::SameLine(0, 20);
+
+        if (ImGui::Button("Save", {100.0f, 0}))
+        {
+            const auto& pixels = this->fbResolved->readPixel();
+            std::string path = ".data/";
+            path += this->name;
+            path += ".png";
+            stbi_write_png(path.c_str(), width, height, 4, pixels.data(), width * 4);
+
+            auto workingDir = std::filesystem::current_path().u8string();
+            LOGI("Save to picture: {}/{}", (const char*)workingDir.data(), path);
+        }
+
+        ImGui::Separator();
+
+        this->drawSettings();
+    }
+    ImGui::End();
 }
 
 void Scene::render()
@@ -85,10 +119,61 @@ void Scene::render()
 
 void Scene::onMouseEvent(const MouseEvent* e)
 {
-
+    if (e->mouseButton == MouseEvent::kButtonLeft)
+    {
+        this->holdLeftButton = e->mouseEventType == MouseEvent::kMousePress;
+    }
+    else if (e->mouseButton == MouseEvent::kButtonRight)
+    {
+        this->holdRightButton = e->mouseEventType == MouseEvent::kMousePress;
+    }
+    else if (e->mouseButton == MouseEvent::kButtonMiddle)
+    {
+        this->holdMidButton = e->mouseEventType == MouseEvent::kMousePress;
+    }
 }
 
 void Scene::onKeyEvent(const KeyEvent* e)
 {
 
+}
+
+
+void Scene::cameraMouseEvent(const MouseEvent* e, Camera2D* camera)
+{
+    if (e->mouseEventType == MouseEvent::kMouseScroll)
+    {
+        float scale = camera->getViewScale();
+        scale = (e->scrollY > 0) ? scale * 0.8f : scale * 1.25f;
+        camera->setViewScale(scale);
+    }
+    else if (e->mouseEventType == MouseEvent::kMouseMove)
+    {
+        if (this->holdLeftButton)
+        {
+            auto delta = e->posDelta;
+            delta *= camera->getViewScale();
+            camera->move({delta.x, -delta.y, 0});
+        }
+    }
+}
+
+void Scene::cameraMouseEvent(const MouseEvent* e, Camera3D* camera)
+{
+    if (e->mouseEventType == MouseEvent::kMouseScroll)
+    {
+        camera->forward((float)e->scrollY*20.0f);
+    }
+    else if (e->mouseEventType == MouseEvent::kMouseMove)
+    {
+        auto delta = e->posDelta;
+        if (this->holdLeftButton)
+        {
+            camera->round(delta.x, -delta.y);
+        }
+        else if(this->holdMidButton)
+        {
+            camera->move({delta.x, -delta.y, 0});
+        }
+    }
 }
