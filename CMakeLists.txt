@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-set(target_name SphericalHarmonicsLighting)
+set(target_name prt)
 project(${target_name})
 
 set(CMAKE_CXX_STANDARD 20)
