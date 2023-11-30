@@ -17,7 +17,8 @@ PolarPlotsScene::PolarPlotsScene(int width, int height)
     this->camera = Camera3D::create();
     this->camera->setLockUp(true);
 
-    this->shader = Shader::createByPath("asset/shader/01PolarPlots.vert", "asset/shader/01PolarPlots.frag");
+    this->shaderColor = Shader::createByPath("asset/shader/01PolarPlots.vert", "asset/shader/01PolarPlots.frag");
+    this->shaderShape = Shader::createByPath("asset/shader/01PolarPlotsShape.vert", "asset/shader/01PolarPlotsShape.frag");
 
     this->sphere = Model::create("asset/model/sphere.obj");
 
@@ -52,6 +53,8 @@ void PolarPlotsScene::draw()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
     //    glDisable(GL_MULTISAMPLE);
+
+    auto& shader = magnitudeAsRadius ? this->shaderShape : this->shaderColor;
 
     shader->use();
     shader->setUniform("viewProj", camera->getViewProj());
@@ -204,6 +207,9 @@ void PolarPlotsScene::drawSettings()
     ImGui::Separator();
     ImGui::ColorEdit3("Positive Color", (float*)&positiveColor, ImGuiColorEditFlags_Float);
     ImGui::ColorEdit3("Negative Color", (float*)&negativeColor, ImGuiColorEditFlags_Float);
+
+    ImGui::Separator();
+    ImGui::Checkbox("Magnitude As Radius", &magnitudeAsRadius);
 }
 
 void PolarPlotsScene::onMouseEvent(const MouseEvent* e)

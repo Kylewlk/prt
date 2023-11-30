@@ -27,15 +27,15 @@ private:
     void onMouseEvent(const MouseEvent* e) override;
 
     Camera3DRef camera;
-    ShaderRef shader;
-
+    ShaderRef shaderColor;
+    ShaderRef shaderShape;
     ModelRef sphere;
-
 
     float lightIntensity{};
     math::Vec3 lightDir{};
 
     math::Vec3 positiveColor{};
     math::Vec3 negativeColor{};
+    bool magnitudeAsRadius{true};
 };
 
