@@ -324,3 +324,13 @@ void Shader::setUniform(const std::string_view name, const math::Mat4& value) co
     glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
 }
 
+void Shader::setUniform(std::string_view name, const math::Vec2i& vec2i) const
+{
+    auto location = glGetUniformLocation(this->program, name.data());
+    if (location == -1)
+    {
+        return;
+    }
+    glUniform2i(location, vec2i.x, vec2i.y);
+}
+

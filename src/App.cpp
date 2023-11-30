@@ -13,12 +13,14 @@
 
 #include "scene/Picture2DScene.h"
 #include "scene/Model3DScene.h"
+#include "scene/PolarPlotsScene.h"
 
 #define ADD_SCENE_MENU(scene) {scene::ID, &scene::create}
 
 AppMenu mainMenus[]{
     ADD_SCENE_MENU(Picture2DScene),
     ADD_SCENE_MENU(Model3DScene),
+    ADD_SCENE_MENU(PolarPlotsScene),
 };
 int mainMenuCount = sizeof(mainMenus)/(sizeof (mainMenus[0]));
 

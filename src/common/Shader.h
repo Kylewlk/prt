@@ -61,6 +61,7 @@ public:
     void setUniform(std::string_view name, const math::Mat2& mat2) const;
     void setUniform(std::string_view name, const math::Mat3& mat3) const;
     void setUniform(std::string_view name, const math::Mat4& mat4) const;
+    void setUniform(std::string_view name, const math::Vec2i& vec2i) const;
 
 private:
 
