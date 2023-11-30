@@ -111,76 +111,79 @@ float Y3_3(vec3 dir)
 
 void main()
 {
+//    vec3 pos = vec3(-aPos.z, -aPos.x, aPos.y);
+    vec3 pos = vec3(aPos.x, aPos.y, aPos.z);
+
     float c = 0.0;
     if (lm.x == 0 && lm.y == 0)
     {
-        c = Y00(normalize(aPos));
+        c = Y00(normalize(pos));
     }
     else if (lm.x == 1 && lm.y == 0)
     {
-        c = Y10(normalize(aPos));
+        c = Y10(normalize(pos));
     }
     else if (lm.x == 1 && lm.y == 1)
     {
-        c = Y11(normalize(aPos));
+        c = Y11(normalize(pos));
     }
     else if (lm.x == 1 && lm.y == -1)
     {
-        c = Y1_1(normalize(aPos));
+        c = Y1_1(normalize(pos));
     }
     else if (lm.x == 2 && lm.y == 0)
     {
-        c = Y20(normalize(aPos));
+        c = Y20(normalize(pos));
     }
     else if (lm.x == 2 && lm.y == 1)
     {
-        c = Y21(normalize(aPos));
+        c = Y21(normalize(pos));
     }
     else if (lm.x == 2 && lm.y == 2)
     {
-        c = Y22(normalize(aPos));
+        c = Y22(normalize(pos));
     }
     else if (lm.x == 2 && lm.y == -1)
     {
-        c = Y2_1(normalize(aPos));
+        c = Y2_1(normalize(pos));
     }
     else if (lm.x == 2 && lm.y == -2)
     {
-        c = Y2_2(normalize(aPos));
+        c = Y2_2(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == 0)
     {
-        c = Y30(normalize(aPos));
+        c = Y30(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == 1)
     {
-        c = Y31(normalize(aPos));
+        c = Y31(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == 2)
     {
-        c = Y32(normalize(aPos));
+        c = Y32(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == 3)
     {
-        c = Y33(normalize(aPos));
+        c = Y33(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == -1)
     {
-        c = Y3_1(normalize(aPos));
+        c = Y3_1(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == -2)
     {
-        c = Y3_2(normalize(aPos));
+        c = Y3_2(normalize(pos));
     }
     else if (lm.x == 3 && lm.y == -3)
     {
-        c = Y3_3(normalize(aPos));
+        c = Y3_3(normalize(pos));
     }
 
     TexCoords = aTexCoords;
     WorldPos = vec3(model * vec4(aPos*abs(c*2.0), 1.0));
     Normal = normalize(normalMatrix*aNormal);
-    LocalPos = aPos;
+    LocalPos = pos;
 
     gl_Position =  viewProj * vec4(WorldPos, 1.0);
 }
