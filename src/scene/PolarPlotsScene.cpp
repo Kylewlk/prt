@@ -37,10 +37,11 @@ void PolarPlotsScene::reset()
 {
     this->camera->resetView();
 
-    this->lightColor = {0.9, 0.9, 0.9};
+    this->lightIntensity = 0.8f;
     this->lightDir = {1, 1, 0.3};
 
-    this->sphereColor = math::Vec3{0.3, 0.7, 0.5};
+    this->positiveColor = math::Vec3{0.3f, 0.62f, 0.7f};
+    this->negativeColor = math::Vec3{0.95f, 0.82f, 0.5f};
 }
 
 void PolarPlotsScene::draw()
@@ -54,14 +55,14 @@ void PolarPlotsScene::draw()
 
     shader->use();
     shader->setUniform("viewProj", camera->getViewProj());
-    shader->setUniform("lightColor", lightColor);
+    shader->setUniform("lightColor", math::Vec3{lightIntensity, lightIntensity, lightIntensity});
     shader->setUniform("lightDir", glm::normalize(lightDir));
     shader->setUniform("cameraPos", camera->getViewPosition());
 
     auto matScale = math::scale({40, 40, 40});
     auto normalMat = glm::transpose(glm::inverse(math::Mat3{matScale}));
-    shader->setUniform("positive", math::Vec3{1, 0, 0});
-    shader->setUniform("negative", math::Vec3{0, 1, 1});
+    shader->setUniform("positive", positiveColor);
+    shader->setUniform("negative", negativeColor);
     shader->setUniform("normalMatrix", normalMat);
 
     math::Mat4 model;
@@ -197,11 +198,12 @@ void PolarPlotsScene::draw()
 
 void PolarPlotsScene::drawSettings()
 {
-    ImGui::ColorEdit3("Light Color", (float*)&lightColor, ImGuiColorEditFlags_Float);
+    ImGui::SliderFloat("Light Intensity", (float*)&lightIntensity, 0.1, 1.0);
     ImGui::DragFloat3("Light Direction", (float*)&lightDir);
 
     ImGui::Separator();
-    ImGui::ColorEdit3("Sphere Color", (float*)&sphereColor, ImGuiColorEditFlags_Float);
+    ImGui::ColorEdit3("Positive Color", (float*)&positiveColor, ImGuiColorEditFlags_Float);
+    ImGui::ColorEdit3("Negative Color", (float*)&negativeColor, ImGuiColorEditFlags_Float);
 }
 
 void PolarPlotsScene::onMouseEvent(const MouseEvent* e)

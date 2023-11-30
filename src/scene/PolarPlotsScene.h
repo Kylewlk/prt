@@ -32,9 +32,10 @@ private:
     ModelRef sphere;
 
 
-    math::Vec3 lightColor{};
+    float lightIntensity{};
     math::Vec3 lightDir{};
 
-    math::Vec3 sphereColor{};
+    math::Vec3 positiveColor{};
+    math::Vec3 negativeColor{};
 };
 
