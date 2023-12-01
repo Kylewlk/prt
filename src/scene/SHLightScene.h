@@ -21,6 +21,8 @@ private:
     enum DrawType
     {
         kHdrTexture,
+        kHdrCubMap,
+
         kTextureCubeMap,
 
         kCubeEnvironment,
@@ -36,13 +38,21 @@ private:
     void reset() override;
     void drawSettings() override;
     void onMouseEvent(const MouseEvent* e) override;
+    TextureRef createCubMap(const TextureRef& hdr);
+    void createShLight(const TextureRef& hdr, float (&shLight)[16]);
+
+    void drawHdrCubeMap();
+    void drawTextureCubeMap();
 
     Camera3DRef camera3d;
     Camera2DRef camera2d;
     ShaderRef shaderPicture;
+    ShaderRef shaderHdrToCubeMap;
+    ShaderRef shaderCubMap;
     ShaderRef shader;
 
     ModelRef sphere;
+    ModelRef cube;
 
     math::Vec3 lightColor{};
     math::Vec3 lightDir{};
@@ -50,6 +60,8 @@ private:
     TextureRef roomHdr;
     TextureRef roomCubeMap;
     float roomShLight[16]{};
+
+    float (&r)[16] = roomShLight;
 
     TextureRef skyHdr;
     TextureRef skyCubeMap;
@@ -60,7 +72,7 @@ private:
     TextureRef textureCubeMap;
     float* shLight{};
 
-
+    int hdrType = 0;
     int drawType = kHdrTexture;
 
 };
