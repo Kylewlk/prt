@@ -15,5 +15,5 @@ void main()
 //    c.rgb = pow(c.rgb, vec3(2.2)); // gamma, to linner
 
     fragColor = c * color;
-    fragColor.rgb *= color.a; // premultiply alpha
+    fragColor.rgb *= fragColor.a; // premultiply alpha
 }
