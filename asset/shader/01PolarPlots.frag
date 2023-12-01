@@ -46,13 +46,13 @@ float Y20(vec3 dir)
 float Y21(vec3 dir)
 {
     float x = dir.x, y = dir.y, z = dir.z;
-    return 1.0/4.0 * sqrt(15.0 / pi) * (x*z);
+    return 1.0/2.0 * sqrt(15.0 / pi) * (x*z);
 }
 
 float Y2_1(vec3 dir)
 {
     float x = dir.x, y = dir.y, z = dir.z;
-    return 1.0/4.0 * sqrt(15.0 / pi) * (y*z);
+    return 1.0/2.0 * sqrt(15.0 / pi) * (y*z);
 }
 
 float Y22(vec3 dir)
@@ -64,7 +64,7 @@ float Y22(vec3 dir)
 float Y2_2(vec3 dir)
 {
     float x = dir.x, y = dir.y, z = dir.z;
-    return 1.0/4.0 * sqrt(15.0 / pi) * (x*y);
+    return 1.0/2.0 * sqrt(15.0 / pi) * (x*y);
 }
 
 float Y30(vec3 dir)
@@ -94,7 +94,7 @@ float Y32(vec3 dir)
 float Y3_2(vec3 dir)
 {
     float x = dir.x, y = dir.y, z = dir.z;
-    return 1.0/4.0 * sqrt(105 / pi) * x * y * z;
+    return 1.0/2.0 * sqrt(105 / pi) * x * y * z;
 }
 
 float Y33(vec3 dir)
@@ -193,7 +193,7 @@ void main()
     }
 
     vec3 albedo = mix(negative, positive, step(0, c));
-    albedo *= abs(c) * (lm.x + 2.0);
+    albedo *= abs(c) * (lm.x * 0.2 + 3.0);
 
 
 
