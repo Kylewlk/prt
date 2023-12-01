@@ -32,7 +32,7 @@ public:
     virtual void render();
 
 protected:
-    Scene(const char* name, int width, int height, int samples);
+    Scene(const char* name, int width, int height, int samples, bool hdr = false);
 
     virtual void draw();
     virtual void drawProperty();
@@ -50,9 +50,12 @@ protected:
     math::Vec4 clearColor{0.0f, 0.0f, 0.0f, 1.0f};
     bool showPropertyWindow{true};
 
+    bool hdr = false;
     int samples = 4;
     FrameBufferRef fbDraw; // multi-sample
     FrameBufferRef fbResolved;
+    ShaderRef toneMappingShader;
+    float toneMappingExposure{1.0f};
 
     MouseListenerRef mouseListener;
     KeyListenerRef keyListener;

@@ -4,17 +4,31 @@
 
 #include "Scene.h"
 #include "common/FrameBuffer.h"
+#include "common/Shader.h"
+#include "common/Texture.h"
 #include "camera/Camera2D.h"
 #include "camera/Camera3D.h"
 #include "common/EventSystem.h"
 #include "common/Logger.h"
 
-Scene::Scene(const char* name, int width, int height, int samples)
-    :name(name), width(0), height(0), samples(samples)
+Scene::Scene(const char* name, int width, int height, int samples, bool hdr /*= false*/)
+    :name(name), width(0), height(0), samples(samples), hdr(hdr)
 {
     if (width > 0 && height > 0)
     {
         Scene::resize(width, height);
+    }
+
+    if (hdr)
+    {
+        if (samples > 1)
+        {
+            this->toneMappingShader = Shader::createByPath("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping_multisample.frag");
+        }
+        else
+        {
+            this->toneMappingShader = Shader::createByPath("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping.frag");
+        }
     }
 
     this->mouseListener = MouseListener::create();
@@ -41,14 +55,15 @@ void Scene::resize(int width_, int height_)
 
     this->width = width_;
     this->height = height_;
-    if ( this->samples <= 1)
+    if ( this->samples <= 1 && !hdr)
     {
         this->fbResolved = FrameBuffer::create(width, height, RenderTarget::kTexColor, RenderTarget::kRenderDepth);
     }
     else
     {
         this->fbResolved = FrameBuffer::create(width, height, RenderTarget::kTexColor, RenderTarget::kNone);
-        this->fbDraw = FrameBuffer::createMultisample(width, height, 4, RenderTarget::kTexColor, true);
+        this->fbDraw = FrameBuffer::createMultisample(width, height, samples,
+                                                      hdr ? RenderTarget::kTexColorFloat : RenderTarget::kTexColor, true);
     }
 }
 
@@ -84,6 +99,10 @@ void Scene::drawProperty()
             auto workingDir = std::filesystem::current_path().u8string();
             LOGI("Save to picture: {}/{}", (const char*)workingDir.data(), path);
         }
+        if (this->hdr)
+        {
+            ImGui::SliderFloat("exposure", &this->toneMappingExposure, 0.01f, 100.0f);
+        }
 
         ImGui::Separator();
 
@@ -94,15 +113,7 @@ void Scene::drawProperty()
 
 void Scene::render()
 {
-    if (samples <= 1)
-    {
-        fbResolved->bind();
-        glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        this->draw();
-        fbResolved->unbind();
-    }
-    else
+    if (hdr)
     {
         fbDraw->bind();
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
@@ -110,9 +121,44 @@ void Scene::render()
         this->draw();
         fbDraw->unbind();
 
-        fbDraw->blitFramebuffer(0, 0, width, height, this->fbResolved);
+        this->fbResolved->bind();
+        this->toneMappingShader->use();
+        if (this->samples > 1)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fbDraw->getColor()->getHandle());
+            glUniform1i(0, 0);
+            this->toneMappingShader->setUniform("sampleCount", fbDraw->getSamples());
+        }
+        else
+        {
+            this->toneMappingShader->bindTexture(0, this->fbDraw->getColor());
+        }
+        this->toneMappingShader->setUniform("exposure", toneMappingExposure);
+        drawQuad();
+        this->fbResolved->unbind();
     }
+    else
+    {
+        if (samples <= 1)
+        {
+            fbResolved->bind();
+            glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            this->draw();
+            fbResolved->unbind();
+        }
+        else
+        {
+            fbDraw->bind();
+            glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            this->draw();
+            fbDraw->unbind();
 
+            fbDraw->blitFramebuffer(0, 0, width, height, this->fbResolved);
+        }
+    }
 
     this->drawProperty();
 }
