@@ -20,7 +20,9 @@ PolarPlotsScene::PolarPlotsScene(int width, int height)
     this->shaderColor = Shader::createByPath("asset/shader/01PolarPlots.vert", "asset/shader/01PolarPlots.frag");
     this->shaderShape = Shader::createByPath("asset/shader/01PolarPlotsShape.vert", "asset/shader/01PolarPlotsShape.frag");
 
-    this->sphere = Model::create("asset/model/sphere.obj");
+//    this->sphere = Model::create("asset/model/sphere.obj");
+    this->sphere = Model::create();
+    this->updateSphere(64);
 
     PolarPlotsScene::reset();
 }
@@ -216,4 +218,49 @@ void PolarPlotsScene::onMouseEvent(const MouseEvent* e)
 {
     Scene::onMouseEvent(e);
     cameraMouseEvent(e, this->camera.get());
+}
+
+void PolarPlotsScene::updateSphere(int segment)
+{
+    auto& vertices = this->sphere->getVertices();
+    auto& indices = this->sphere->getIndices();
+
+    vertices.clear();
+    vertices.reserve((segment + 1) * (segment + 1));
+    float xSegment = math::pi_2 / (float)segment;
+    float ySegment = math::pi / (float)segment;
+    for (unsigned int y = 0; y <= segment; ++y)
+    {
+        for (unsigned int x = 0; x <= segment; ++x)
+        {
+            auto& vertex = vertices.emplace_back();
+
+            vertex.position.x = std::cos((float)x * xSegment) * std::sin((float)y * ySegment);
+            vertex.position.y = std::cos((float)y * ySegment);
+            vertex.position.z = std::sin((float)x * xSegment) * std::sin((float)y * ySegment);
+            vertex.normal = vertex.position;
+            vertex.texCoord.x = float(x) / float(segment);
+            vertex.texCoord.y = float(y) / float(segment);
+        }
+    }
+
+    indices.clear();
+    indices.reserve(2 * 3 * segment * segment);
+    for (unsigned int y = 0; y < segment; ++y)
+    {
+        auto r1 = y * (segment + 1);
+        auto r2 = (y + 1) * (segment + 1);
+        for (unsigned int x = 0; x < segment; ++x)
+        {
+            indices.push_back(r1 + x);
+            indices.push_back(r1 + x + 1);
+            indices.push_back(r2 + x);
+
+            indices.push_back(r1 + x + 1);
+            indices.push_back(r2 + x + 1);
+            indices.push_back(r2 + x);
+        }
+    }
+
+    this->sphere->updateGL();
 }

@@ -23,8 +23,8 @@ private:
     void draw() override;
     void reset() override;
     void drawSettings() override;
-
     void onMouseEvent(const MouseEvent* e) override;
+    void updateSphere(int segment);
 
     Camera3DRef camera;
     ShaderRef shaderColor;
