@@ -43,6 +43,8 @@ public:
     }
     void bindTexture(const std::string& uniform, const Texture* tex);
     void bindTexture(GLint uniformLocation, const Texture* tex);
+    void setUboBinding(std::string_view name, GLuint bindingPoint) const;
+    void setSSBOBinding(std::string_view name, GLuint bindingPoint) const;
 
     void setUniform(std::string_view name, bool b) const;
     void setUniform(std::string_view name, int i) const;

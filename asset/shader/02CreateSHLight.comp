@@ -1,0 +1,43 @@
+#version 430 core
+
+
+layout (local_size_x=8, local_size_y=16, local_size_z=1) in;
+
+uniform samplerCube cubeMap;
+
+layout (std430, binding = 0) buffer SHLight {
+    float sh[16];
+};
+
+const float pi = 3.1415926;
+
+// Atomic multiply function for float values
+void atomicIntegral(inout float mem, float val) {
+
+    // Get the current value as an integer
+    float temp = mem;
+    uint old = floatBitsToUint(temp);
+    // Compute the new value as an integer
+    uint new = floatBitsToUint(temp + val);
+    // Loop until the exchange is successful
+    while (old != atomicCompSwap(mem, old,  new))
+    {
+        // Update the old and new values
+        float temp = mem;
+        old = floatBitsToUint(temp);
+        new = floatBitsToUint(temp + val);
+    }
+}
+
+void main()
+{
+    uvec3 globalSize = gl_NumWorkGroups * gl_WorkGroupSize;
+
+    float phi = float(gl_GlobalInvocationID.x) / float(globalSize.x) * 2.0 * pi;
+    float theta = float(gl_GlobalInvocationID.y) / float(globalSize.y) * pi;
+
+    irradiance += texture(cubeMap, sampleVec).rgb * cos(theta) * sin(theta);
+    nrSamples++;
+
+
+}

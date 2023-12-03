@@ -119,7 +119,7 @@ void SHLightScene::drawHdrCubeMap()
     this->sphere->draw();
 
 
-    mat = math::translate({150, 0, 0}) * math::scale({200, 200, 200});
+    mat = math::translate({150, 0, 0}) * math::scale({150, 150, 150});
     shaderHdrToCubeMap->setUniform("viewProj", this->camera3d->getViewProj() * mat);
     this->cube->draw();
 }
@@ -134,7 +134,7 @@ void SHLightScene::drawTextureCubeMap()
     shaderCubMap->setUniform("viewProj", this->camera3d->getViewProj() * mat);
     this->sphere->draw();
 
-    mat = math::translate({150, 0, 0}) * math::scale({200, 200, 200});
+    mat = math::translate({150, 0, 0}) * math::scale({150, 150, 150});
     shaderCubMap->setUniform("viewProj", this->camera3d->getViewProj() * mat);
     this->cube->draw();
 }
@@ -192,7 +192,7 @@ void SHLightScene::onMouseEvent(const MouseEvent* e)
 TextureRef SHLightScene::createCubMap(const TextureRef& hdr)
 {
     const int mapSize = 256;
-    TextureRef cubeMap = Texture::createCubemap(GL_RGBA16F, mapSize, mapSize, -1);
+    TextureRef cubeMap = Texture::createCubemap(GL_RGBA16F, mapSize, mapSize, 1);
 
     FrameBufferRef frameBuffer = FrameBuffer::create(mapSize, mapSize, RenderTarget::kNone, RenderTarget::kNone);
 
@@ -222,7 +222,6 @@ TextureRef SHLightScene::createCubMap(const TextureRef& hdr)
         frameBuffer->unbind();
     }
 
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     cubeMap->setSampler(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE);
     return cubeMap;
 }

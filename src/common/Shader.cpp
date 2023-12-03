@@ -147,6 +147,27 @@ void Shader::bindTexture(GLint uniformLocation, const Texture* tex)
     ++this->texUnit;
 }
 
+void Shader::setUboBinding(std::string_view name, GLuint bindingPoint) const
+{
+    auto blockIndex = glGetUniformBlockIndex(this->program, name.data());
+    if (blockIndex == GL_INVALID_INDEX)
+    {
+        return;
+    }
+    glUniformBlockBinding(this->program, blockIndex, bindingPoint);
+}
+
+void Shader::setSSBOBinding(std::string_view name, GLuint bindingPoint) const
+{
+    auto blockIndex = glGetProgramResourceIndex(this->program, GL_SHADER_STORAGE_BLOCK, name.data());
+    if (blockIndex == GL_INVALID_INDEX)
+    {
+        return;
+    }
+    glShaderStorageBlockBinding(this->program, blockIndex, bindingPoint);
+}
+
+
 void Shader::setUniform(std::string_view name, bool value) const
 {
     auto location = glGetUniformLocation(this->program, name.data());
