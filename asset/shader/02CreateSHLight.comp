@@ -41,47 +41,37 @@ void main()
     float cosPhi = cos(phi);
     float sinPhi = sin(phi);
 
-    vec3 sampleVec = vec3(sinTheta * cosPhi,  sinTheta * sinPhi, cosTheta);
-    vec3 color = textureLod(cubeMap, sampleVec, 0).rgb;
-    float sr = delatTheta * deltaPhi * sinTheta;
-
+    float basis[16];
+    vec3 dir = vec3(sinTheta * cosPhi,  sinTheta * sinPhi, cosTheta);
+    float x = dir.x, y = dir.y, z = dir.z;
     int index = 0;
+    basis[index++] = 1.0/2.0 * sqrt(1.0 / pi);
 
-    vec3 sh0 = 1 /2.0 * sqrt(1.0 / pi) * sr * color;
-    atomicIntegral(index++, sh0);
+    basis[index++] = 1.0/2.0 * sqrt(3.0 / pi) * z;
+    basis[index++] = 1.0/2.0 * sqrt(3.0 / pi) * x;
+    basis[index++] = 1.0/2.0 * sqrt(3.0 / pi) * y;
 
-    vec3 sh10 = 1/2.0 * sqrt(3.0 / pi) * cosTheta * sr * color;
-    atomicIntegral(index++, sh10);
-    vec3 sh11 = 1/2.0 * sqrt(3.0 / pi) * sinTheta * cosPhi * sr * color;
-    atomicIntegral(index++, sh11);
-    vec3 sh1_1 = 1/2.0 * sqrt(3.0 / pi) * sinTheta * sinPhi * sr * color;
-    atomicIntegral(index++, sh1_1);
+    basis[index++] = 1.0/4.0 * sqrt(5.0 / pi) * (2.0*z*z - x*x - y*y);
+    basis[index++] = 1.0/2.0 * sqrt(15.0 / pi) * (x*z);
+    basis[index++] = 1.0/2.0 * sqrt(15.0 / pi) * (y*z);
+    basis[index++] = 1.0/4.0 * sqrt(15.0 / pi) * (x*x - y*y);
+    basis[index++] = 1.0/2.0 * sqrt(15.0 / pi) * (x*y);
 
-    vec3 sh20 = 1/4.0 * sqrt(5.0 / pi) * (3 * cosTheta * cosTheta - 1)  * sr * color;
-    atomicIntegral(index++, sh20);
-    vec3 sh21 = 1/2.0 * sqrt(15.0 / pi) * sinTheta * cosTheta * cosPhi * sr * color;
-    atomicIntegral(index++, sh21);
-    vec3 sh2_1 = 1/2.0 * sqrt(15.0 / pi) * sinTheta * cosTheta * sinPhi * sr * color;
-    atomicIntegral(index++, sh2_1);
-    vec3 sh22 = 1/4.0 * sqrt(15.0 / pi) * sinTheta * sinTheta * cos(2*phi) * sr * color;
-    atomicIntegral(index++, sh22);
-    vec3 sh2_2 = 1/4.0 * sqrt(15.0 / pi) * sinTheta * sinTheta * sin(2*phi) * sr * color;
-    atomicIntegral(index++, sh2_2);
+    basis[index++] = 1.0/4.0 * sqrt(7.0 / pi) * z * (2.0*z*z - 3.0*x*x - 3.0*y*y);
+    basis[index++] = 1.0/4.0 * sqrt(10.5 / pi) * x * (5.0*z*z - 1.0);
+    basis[index++] = 1.0/4.0 * sqrt(10.5 / pi) * y * (5.0*z*z - 1.0);
+    basis[index++] = 1.0/4.0 * sqrt(105 / pi) * z * (x*x - y*y);
+    basis[index++] = 1.0/2.0 * sqrt(105 / pi) * x * y * z;
+    basis[index++] = 1.0/4.0 * sqrt(17.5 / pi) * x * (x*x - 3.0*y*y);
+    basis[index++] = 1.0/4.0 * sqrt(17.5 / pi) * y * (3*x*x - y*y);
 
-    vec3 sh30 = 1/4.0 * sqrt(7.0 / pi) * (5 * cosTheta * cosTheta * cosTheta - 3 * cosTheta) * sr * color;
-    atomicIntegral(index++, sh30);
-    vec3 sh31 = 1/4.0 * sqrt(10.5 / pi) * (5 * cosTheta * cosTheta - 1) * sinTheta * cosPhi * sr * color;
-    atomicIntegral(index++, sh31);
-    vec3 sh3_1 = 1/4.0 * sqrt(10.5 / pi) * (5 * cosTheta * cosTheta - 1) * sinTheta * sinPhi * sr * color;
-    atomicIntegral(index++, sh3_1);
-    vec3 sh32 = 1/4.0 * sqrt(105 / pi) * cosTheta * sinTheta * sinTheta * cos(2*phi) * sr * color;
-    atomicIntegral(index++, sh32);
-    vec3 sh3_2 = 1/4.0 * sqrt(105 / pi) * cosTheta * sinTheta * sinTheta * sin(2*phi) * sr * color;
-    atomicIntegral(index++, sh3_2);
-    vec3 sh33 = 1/4.0 * sqrt(17.5 / pi) * sinTheta * sinTheta * sinTheta * cos(3*phi) * sr * color;
-    atomicIntegral(index++, sh33);
-    vec3 sh3_3 = 1/4.0 * sqrt(17.5 / pi) * sinTheta * sinTheta * sinTheta * sin(3*phi) * sr * color;
-    atomicIntegral(index++, sh3_3);
+    vec3 color = textureLod(cubeMap, dir, 0).rgb;
+    float sr = delatTheta * deltaPhi * sinTheta;
+    color *= sr;
+    for (int i = 0; i < 16; ++i)
+    {
+        atomicIntegral(i, color * basis[i]);
+    }
 
 //    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0)
 //    {
