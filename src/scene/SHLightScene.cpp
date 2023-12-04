@@ -22,17 +22,35 @@ SHLightScene::SHLightScene(int width, int height)
     this->shaderPicture = Shader::create("asset/shader/picture.vert", "asset/shader/picture.frag");
     this->shaderHdrToCubeMap = Shader::create("asset/shader/cubemap.vert", "asset/shader/cubemap_from_hdr.frag");
     this->shaderCubMap = Shader::create("asset/shader/cubemap.vert", "asset/shader/cubemap.frag");
-    this->shader = Shader::create("asset/shader/model.vert", "asset/shader/model.frag");
+    this->shaderShowSHLight = Shader::create("asset/shader/cubemap.vert", "asset/shader/02ShowSHLight.frag");
+    this->shaderCreateSHLight = Shader::createComputeShader("asset/shader/02CreateSHLight.comp");
 
     this->sphere = Model::create("asset/model/sphere.obj");
     this->cube = Model::create("asset/model/cube.obj");
 
     this->roomHdr = Texture::createHDR("asset/room.hdr");
     this->roomCubeMap = this->createCubMap(roomHdr);
+    this->roomShLight = createShLight(roomCubeMap);
     this->textureHdr = roomHdr;
     this->textureCubeMap = roomCubeMap;
+    this->shLight = roomShLight;
 
     SHLightScene::reset();
+}
+
+SHLightScene::~SHLightScene()
+{
+    if (this->roomShLight != 0)
+    {
+        glDeleteBuffers(1, &roomShLight);
+        roomShLight = 0;
+    }
+
+    if (this->skyShLight != 0)
+    {
+        glDeleteBuffers(1, &skyShLight);
+        skyShLight = 0;
+    }
 }
 
 SceneRef SHLightScene::create()
@@ -79,31 +97,9 @@ void SHLightScene::draw()
     {
         this->drawTextureCubeMap();
     }
-    else if(this->drawType == kCubeEnvironment)
+    else if(this->drawType == kSHLight)
     {
-        drawAxis3D(camera3d->getViewProj(), 100, 2);
-        shader->use();
-        shader->setUniform("viewProj", camera3d->getViewProj());
-
-        shader->setUniform("lightColor", lightColor);
-        shader->setUniform("lightDir", glm::normalize(lightDir));
-        shader->setUniform("cameraPos", camera3d->getViewPosition());
-
-
-
-        auto mat = math::translate({-120, 0, 0}) * math::scale({100, 100, 100});
-        auto normalMat = glm::transpose(glm::inverse(math::Mat3{mat}));
-        shader->setUniform("albedo", math::Vec3{1, 1, 1});
-        shader->setUniform("model", mat);
-        shader->setUniform("normalMatrix", normalMat);
-        this->sphere->draw();
-
-
-        mat = math::translate({120, 0, 0}) * math::scale({100, 100, 100});
-        shader->setUniform("albedo", math::Vec3{1, 1, 1});
-        shader->setUniform("model", mat);
-        shader->setUniform("normalMatrix", normalMat);
-        this->sphere->draw();
+        this->drawShLight();
     }
 
 }
@@ -128,7 +124,7 @@ void SHLightScene::drawTextureCubeMap()
 {
     drawAxis3D(camera3d->getViewProj(), 50, 2);
     shaderCubMap->use();
-    shaderCubMap->bindTexture("cubeMap", this->textureHdr);
+    shaderCubMap->bindTexture("cubeMap", this->textureCubeMap);
 
     auto mat = math::translate({-150, 0, 0}) * math::scale({100, 100, 100});
     shaderCubMap->setUniform("viewProj", this->camera3d->getViewProj() * mat);
@@ -136,6 +132,22 @@ void SHLightScene::drawTextureCubeMap()
 
     mat = math::translate({150, 0, 0}) * math::scale({150, 150, 150});
     shaderCubMap->setUniform("viewProj", this->camera3d->getViewProj() * mat);
+    this->cube->draw();
+}
+
+void SHLightScene::drawShLight()
+{
+    drawAxis3D(camera3d->getViewProj(), 50, 2);
+    shaderShowSHLight->use();
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, this->shLight);
+//    shaderShowSHLight->bindTexture("cubeMap", this->textureCubeMap);
+
+    auto mat = math::translate({-150, 0, 0}) * math::scale({100, 100, 100});
+    shaderShowSHLight->setUniform("viewProj", this->camera3d->getViewProj() * mat);
+    this->sphere->draw();
+
+    mat = math::translate({150, 0, 0}) * math::scale({150, 150, 150});
+    shaderShowSHLight->setUniform("viewProj", this->camera3d->getViewProj() * mat);
     this->cube->draw();
 }
 
@@ -147,7 +159,7 @@ void SHLightScene::drawSettings()
         {
             this->roomHdr = Texture::createHDR("asset/room.hdr");
             this->roomCubeMap = this->createCubMap(roomHdr);
-            this->createShLight(roomHdr, roomShLight);
+            this->roomShLight =  this->createShLight(roomHdr);
         }
         this->textureHdr = roomHdr;
         this->textureCubeMap = roomCubeMap;
@@ -159,7 +171,7 @@ void SHLightScene::drawSettings()
         {
             this->skyHdr = Texture::createHDR("asset/sky.hdr");
             this->skyCubeMap = this->createCubMap(skyHdr);
-            this->createShLight(skyHdr, skyShLight);
+            this->skyShLight = this->createShLight(skyHdr);
         }
         this->textureHdr = skyHdr;
         this->textureCubeMap = skyCubeMap;
@@ -174,6 +186,7 @@ void SHLightScene::drawSettings()
     ImGui::RadioButton("HDR Texture", &drawType, kHdrTexture);
     ImGui::RadioButton("HDR Cube Map", &drawType, kHdrCubMap);
     ImGui::RadioButton("Texture Cube Map", &drawType, kTextureCubeMap);
+    ImGui::RadioButton("SH Light", &drawType, kSHLight);
 }
 
 void SHLightScene::onMouseEvent(const MouseEvent* e)
@@ -226,8 +239,33 @@ TextureRef SHLightScene::createCubMap(const TextureRef& hdr)
     return cubeMap;
 }
 
-void SHLightScene::createShLight(const TextureRef& hdr, float (&light)[16])
+GLuint SHLightScene::createShLight(const TextureRef& cubeMap)
 {
+    GLuint light = 0;
 
+    math::Vec4 lightData[16]{{0, 0, 0, 0}};
+
+    glGenBuffers(1, &light);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, light);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(lightData), lightData, GL_STREAM_COPY);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, light);
+
+    shaderCreateSHLight->use();
+    shaderHdrToCubeMap->bindTexture("cubeMap", cubeMap);
+    glDispatchCompute(64, 64, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS );
+
+    auto data = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+    memcpy(lightData, data, sizeof(lightData));
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    std::cout << "SH Light: ";
+    for (auto l : lightData)
+    {
+        std::cout << "(" << l.x << ", " << l.y << ", "<< l.z << ")\n";
+    }
+    std::cout << std::endl;
+
+    return light;
 }
 
