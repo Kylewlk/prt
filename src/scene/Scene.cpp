@@ -23,11 +23,13 @@ Scene::Scene(const char* name, int width, int height, int samples, bool hdr /*= 
     {
         if (samples > 1)
         {
-            this->toneMappingShader = Shader::createByPath("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping_multisample.frag");
+            this->toneMappingShader =
+                Shader::create("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping_multisample.frag");
         }
         else
         {
-            this->toneMappingShader = Shader::createByPath("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping.frag");
+            this->toneMappingShader =
+                Shader::create("asset/shader/tone_mapping.vert", "asset/shader/tone_mapping.frag");
         }
     }
 

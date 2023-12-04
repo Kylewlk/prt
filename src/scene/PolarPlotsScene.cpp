@@ -17,8 +17,8 @@ PolarPlotsScene::PolarPlotsScene(int width, int height)
     this->camera = Camera3D::create();
     this->camera->setLockUp(true);
 
-    this->shaderColor = Shader::createByPath("asset/shader/01PolarPlots.vert", "asset/shader/01PolarPlots.frag");
-    this->shaderShape = Shader::createByPath("asset/shader/01PolarPlotsShape.vert", "asset/shader/01PolarPlotsShape.frag");
+    this->shaderColor = Shader::create("asset/shader/01PolarPlots.vert", "asset/shader/01PolarPlots.frag");
+    this->shaderShape = Shader::create("asset/shader/01PolarPlotsShape.vert", "asset/shader/01PolarPlotsShape.frag");
 
 //    this->sphere = Model::create("asset/model/sphere.obj");
     this->sphere = Model::create();

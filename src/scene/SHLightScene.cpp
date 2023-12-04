@@ -19,10 +19,10 @@ SHLightScene::SHLightScene(int width, int height)
     this->camera3d->setLockUp(true);
     this->camera2d = Camera2D::create();
 
-    this->shaderPicture = Shader::createByPath("asset/shader/picture.vert", "asset/shader/picture.frag");
-    this->shaderHdrToCubeMap = Shader::createByPath("asset/shader/cubemap.vert", "asset/shader/cubemap_from_hdr.frag");
-    this->shaderCubMap = Shader::createByPath("asset/shader/cubemap.vert", "asset/shader/cubemap.frag");
-    this->shader = Shader::createByPath("asset/shader/model.vert", "asset/shader/model.frag");
+    this->shaderPicture = Shader::create("asset/shader/picture.vert", "asset/shader/picture.frag");
+    this->shaderHdrToCubeMap = Shader::create("asset/shader/cubemap.vert", "asset/shader/cubemap_from_hdr.frag");
+    this->shaderCubMap = Shader::create("asset/shader/cubemap.vert", "asset/shader/cubemap.frag");
+    this->shader = Shader::create("asset/shader/model.vert", "asset/shader/model.frag");
 
     this->sphere = Model::create("asset/model/sphere.obj");
     this->cube = Model::create("asset/model/cube.obj");

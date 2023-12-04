@@ -31,15 +31,15 @@ ShaderRef Shader::create(const ShaderInfo* si)
     return ShaderRef(shader);
 }
 
-ShaderRef Shader::create(const std::string& vertSrc, const std::string& fragSrc)
+ShaderRef Shader::create(const std::string& vertPath, const std::string& fragPath)
 {
-    ShaderInfo si[] = {{GL_VERTEX_SHADER, vertSrc, false}, {GL_FRAGMENT_SHADER, fragSrc, false}, {}};
+    ShaderInfo si[] = {{GL_VERTEX_SHADER, vertPath, true}, {GL_FRAGMENT_SHADER, fragPath, true}, {}};
     return create(si);
 }
 
-ShaderRef Shader::createByPath(const std::string& vertPath, const std::string& fragPath)
+ShaderRef Shader::createComputeShader(const std::string& path)
 {
-    ShaderInfo si[] = {{GL_VERTEX_SHADER, vertPath, true}, {GL_FRAGMENT_SHADER, fragPath, true}, {}};
+    ShaderInfo si[] = {{GL_COMPUTE_SHADER, path, true}, {}};
     return create(si);
 }
 

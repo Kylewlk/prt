@@ -17,7 +17,7 @@ Model3DScene::Model3DScene(int width, int height)
     this->camera = Camera3D::create();
     this->camera->setLockUp(true);
 
-    this->shader = Shader::createByPath("asset/shader/model.vert", "asset/shader/model.frag");
+    this->shader = Shader::create("asset/shader/model.vert", "asset/shader/model.frag");
 
     this->sphere = Model::create("asset/model/sphere.obj");
     this->cube = Model::create("asset/model/cube.obj");

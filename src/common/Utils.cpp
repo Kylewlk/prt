@@ -182,7 +182,7 @@ struct GLShader
     {
         if (this->shader == nullptr)
         {
-            this->shader = Shader::createByPath(vert, frag);
+            this->shader = Shader::create(vert, frag);
         }
         return this->shader;
     }

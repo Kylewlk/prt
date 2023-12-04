@@ -11,11 +11,11 @@ struct ShaderInfo
 {
     GLenum type = GL_NONE;
     std::string source;
-    bool isPath = false;
+    bool isPath = true;
 
     ShaderInfo() = default;
 
-    ShaderInfo(GLenum type, std::string source, bool isPath = false)
+    ShaderInfo(GLenum type, std::string source, bool isPath = true)
         : type(type),  source(std::move(source)), isPath(isPath) {}
 };
 
@@ -27,8 +27,8 @@ public:
     Shader& operator=(const Shader&) = delete;
 
     static ShaderRef create(const ShaderInfo *si);
-    static ShaderRef create(const std::string& vertSrc, const std::string& fragSrc);
-    static ShaderRef createByPath(const std::string& vertPath, const std::string& fragPath);
+    static ShaderRef create(const std::string& vertPath, const std::string& fragPath);
+    static ShaderRef createComputeShader(const std::string& path);
 
     [[nodiscard]] GLint location(std::string_view name) const;
 

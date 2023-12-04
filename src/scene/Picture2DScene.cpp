@@ -14,7 +14,7 @@ Picture2DScene::Picture2DScene(int width, int height)
     : Scene(ID, width, height, 4)
 {
     this->texture = Texture::create("asset/Lenna.png", false, true);
-    this->shader = Shader::createByPath("asset/shader/picture.vert", "asset/shader/picture.frag");
+    this->shader = Shader::create("asset/shader/picture.vert", "asset/shader/picture.frag");
     this->camera = Camera2D::create();
 
     Picture2DScene::reset();
