@@ -1,6 +1,6 @@
 #version 430 core
 
-
+uniform int shCount;
 layout (std430, binding = 0) buffer SHLight {
     vec3 sh[16];
 };
@@ -9,13 +9,10 @@ in vec3 LocalPos;
 
 out vec4 FragColor;
 
-
 const float pi = 3.1415926;
 
 void main()
 {
-    int shCount = 4;
-
     float basis[16];
     vec3 dir = normalize(LocalPos);
     float x = dir.x, y = dir.y, z = dir.z;
@@ -42,7 +39,9 @@ void main()
 
     vec3 color = vec3(0,0,0);
     for (int i = 0; i < shCount; i++)
+    {
         color += sh[i] * basis[i];
+    }
 
     FragColor = vec4(color, 1.0);
 }

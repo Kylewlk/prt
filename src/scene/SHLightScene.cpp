@@ -140,7 +140,7 @@ void SHLightScene::drawShLight()
     drawAxis3D(camera3d->getViewProj(), 50, 2);
     shaderShowSHLight->use();
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, this->shLight);
-//    shaderShowSHLight->bindTexture("cubeMap", this->textureCubeMap);
+    shaderShowSHLight->setUniform("shCount", shLevel*shLevel);
 
     auto mat = math::translate({-150, 0, 0}) * math::scale({100, 100, 100});
     shaderShowSHLight->setUniform("viewProj", this->camera3d->getViewProj() * mat);
@@ -187,6 +187,7 @@ void SHLightScene::drawSettings()
     ImGui::RadioButton("HDR Cube Map", &drawType, kHdrCubMap);
     ImGui::RadioButton("Texture Cube Map", &drawType, kTextureCubeMap);
     ImGui::RadioButton("SH Light", &drawType, kSHLight);
+    ImGui::SliderInt("SH Level", &shLevel, 1, 4);
 }
 
 void SHLightScene::onMouseEvent(const MouseEvent* e)

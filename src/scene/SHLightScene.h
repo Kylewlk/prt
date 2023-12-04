@@ -70,6 +70,7 @@ private:
     TextureRef textureHdr;
     TextureRef textureCubeMap;
     GLuint shLight{};
+    int shLevel = 4;
 
     int hdrType = 0;
     int drawType = kHdrTexture;

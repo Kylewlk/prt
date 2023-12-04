@@ -42,7 +42,7 @@ void main()
     float sinPhi = sin(phi);
 
     float basis[16];
-    vec3 dir = vec3(sinTheta * cosPhi,  sinTheta * sinPhi, cosTheta);
+    vec3 dir = vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
     float x = dir.x, y = dir.y, z = dir.z;
     int index = 0;
     basis[index++] = 1.0/2.0 * sqrt(1.0 / pi);
@@ -67,6 +67,7 @@ void main()
 
     vec3 color = textureLod(cubeMap, dir, 0).rgb;
     float sr = delatTheta * deltaPhi * sinTheta;
+//    float sr =  (4 * pi / float(globalSize.x*globalSize.y*globalSize.z));
     color *= sr;
     for (int i = 0; i < 16; ++i)
     {
@@ -79,5 +80,5 @@ void main()
 //        sh[14].y = floatBitsToInt(float(globalSize.y));
 //        sh[14].z = floatBitsToInt(float(globalSize.z));
 //    }
-//    atomicIntegral(15, vec3(sr));
+//    atomicIntegral(15, vec3(sr, 1.0, 2.0));
 }
